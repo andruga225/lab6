@@ -2,6 +2,7 @@
 //
 
 #include <iostream>
+#include<iomanip>
 
 using namespace std;
 
@@ -13,8 +14,15 @@ const double eps = 10e-8;
 double f(double x)
 {
 	if (variant == 4)
-		return 2 * exp(x) - 5 * x;
+		return pow(3, x) + 2 * x - 2; // вариант из трекусов
 	return exp(x) + x + 1;
+}
+
+double df(double x)
+{
+	if (variant == 4)
+		return log(3) * pow(3, x) + 2; // вариант из трекусов
+	return exp(x) + 1;
 }
 
 void simpsonMethod()
@@ -121,8 +129,99 @@ void threePointGauss()
 	}
 }
 
+
+
+void first_trapeze_metod()
+{
+	cout << "Метод трапеций" << endl;
+	int N = 1;
+	double h = (xn - x0) / N;
+	double s1, s2=0, s3, sk;
+	double k;
+	double ocenka_pogr, pogr;
+	double alpha = 0.5;
+	sk = (f(x0) + f(xn))/2;
+	double count = 2;
+	s1 = sk * h;
+	cout <<setw(7)<< N << " "  <<setw(15)<< h << " "  << setw(15) << s1 << endl;
+	do
+	{
+		N *= 2;
+		h /= 2;
+		for (int i = 1; i <= N - 1; i += 2)
+		{
+			sk += f(x0 + h * i);
+			count++;
+		}
+		s3 = s2;
+		s2 = s1;
+		s1 =sk*h;
+
+		ocenka_pogr = pow(alpha, 2) / (1 - pow(alpha, 2)) * (s1 - s2);
+		pogr = s1 - s2;
+		if (N == 2) {
+			cout <<setw(7) << N << " "  << setw(15) << h << " "  << setw(15) << s1 << " " << scientific  << setw(15) << ocenka_pogr <<" " << setw(15) << abs(pogr) << endl;
+		}
+		else
+		{
+			k = 1 / log(alpha) * log((s1 - s3) / (s2 - s3) - 1);
+			cout <<setw(7) << N << " "  << setw(15) << h << " "  << setw(15) << s1 << " " << scientific  << setw(15) << ocenka_pogr << " " << setw(15) << abs(pogr) << " " <<setprecision(4) << setw(15) << k << endl;
+		}
+	} while (abs(s1-s2)/3 > eps); // тут вроде такая константа
+
+	cout << "Результат: " << s1 << endl;
+	cout << "Кол-во обращений" << count<<endl;
+}
+
+void second_trapeze_metod()
+{
+	cout << "Метод трапеций (модифицированной с помощью сплайна)" << endl;
+	int N = 1;
+	double h = (xn - x0) / N;
+	double s1, s2 = 0, s3, sk;
+	double k;
+	double ocenka_pogr, pogr;
+	double alpha = 0.5;
+
+	double spr = df(x0) - df(xn);
+	sk = (f(x0) + f(xn)) / 2;
+	double count = 2;
+	s1 = sk * h + h*h/12*spr;
+	cout << setw(7) << N << " " << setw(15) << h << " " << setw(15) << s1 << endl;
+	do
+	{
+		N *= 2;
+		h /= 2;
+		for (int i = 1; i <= N - 1; i += 2)
+		{
+			sk += f(x0 + h * i);
+			count++;
+		}
+		s3 = s2;
+		s2 = s1;
+		s1 = sk * h+spr*h*h/12;
+
+		ocenka_pogr = pow(alpha, 4) / (1 - pow(alpha, 4)) * (s1 - s2);
+		pogr = s1 - s2;
+		if (N == 2) {
+			cout << setw(7) << N << " " << setw(15) << h << " " << setw(15) << s1 << " " << scientific << setw(15) << ocenka_pogr << " " << setw(15) << abs(pogr) << endl;
+		}
+		else
+		{
+			k = 1 / log(alpha) * log((s1 - s3) / (s2 - s3) - 1);
+			cout << setw(7) << N << " " << setw(15) << h << " " << setw(15) << s1 << " " << scientific << setw(15) << ocenka_pogr << " " << setw(15) << abs(pogr) << " " << setprecision(4) << setw(15) << k << endl;
+		}
+	} while (abs(s1 - s2) / 3 > eps); //тут я не уверен насчёт константы
+	cout << "Результат: " << s1 << endl;
+	cout << "Кол-во обращений" << count<<endl;
+}
+
 int main()
 {
+	setlocale(LC_ALL, "rus");
+	/*резюмирую вроде всё сходится с вариантом с трекусов но нужно сделать вывод покрасивше*/
+	first_trapeze_metod();
+	second_trapeze_metod();
 	simpsonMethod();
 	threePointGauss();
 }
