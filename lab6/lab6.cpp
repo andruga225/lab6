@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include<iomanip>
+#include <fstream>
 
 using namespace std;
 
@@ -11,22 +12,26 @@ int x0 = 1;
 int xn = 2;
 const double eps = 10e-8;
 
+ofstream fout("output.txt");
+
 double f(double x)
 {
 	if (variant == 4)
-		return pow(3, x) + 2 * x - 2; // вариант из трекусов
+		return  2 * exp(x) - 5 * x;
 	return exp(x) + x + 1;
 }
 
 double df(double x)
 {
 	if (variant == 4)
-		return log(3) * pow(3, x) + 2; // вариант из трекусов
+		return 2 * exp(x) - 5;
 	return exp(x) + 1;
 }
 
 void simpsonMethod()
 {
+	fout << "Формула Симпсона\n";
+
 	double sum = 0;
 	double runge = 1 / 15.;
 	double n = 1, count = 0;
@@ -45,6 +50,8 @@ void simpsonMethod()
 
 		sum += (_xn - _x0) * (f(_x0) + 4 * f((_x0 + _xn) / 2) + f(_xn)) / 6.;
 	}
+
+	fout << "N | h | Interral | Погрешность | Оценка погр. | k\n";
 
 	while (abs(error) > eps) {
 		h = (dx) / n;
@@ -66,10 +73,20 @@ void simpsonMethod()
 		sumPrev = sumNext;
 		sumNext = sum;
 
-		cout << sum<<endl;
+		if(n<3)
+		{
+			fout << fixed << setw(5)<<setprecision(0) << n << "|" << setw(6) << setprecision(4) << h << "|" <<setw(12)<<setprecision(9)<<sum<<"|" << setw(15) << setprecision(12) << scientific << error << "|\n";
+		}
+		else
+		{
+			fout << fixed << setw(5)<<setprecision(0) << n << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << sum << "|" <<setw(15) << setprecision(12) << scientific << error << "|" << setw(15) << setprecision(12) << scientific << k << '\n';
+		}
+
 		n *= 2;
 	}
 
+	fout << "Result: " << fixed<<setprecision(15)<<sum<<'\n';
+	fout <<fixed<<setprecision(0) <<count;
 }
 
 void threePointGauss()
@@ -109,7 +126,7 @@ void threePointGauss()
 		sum = 0;
 		for (int i = 0; i < n; ++i)
 		{
-			double x = x0 + (2 * i + 1) * h / 2;
+			double x = x0 + (2 * i + 1) * h / 2.;
 
 			sum += (h / 2) * (a0 * f(x - h * sqrt(0.6) / 2) + a1 * f(x) + a0 * f(x + h * sqrt(0.6) / 2));
 
