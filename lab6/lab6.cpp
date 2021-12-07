@@ -48,7 +48,7 @@ void simpsonMethod()
 		double _x0 = x0 + i*h;
 		double _xn = x0 + (i + 1) * h;
 
-		sum += (_xn - _x0) * (f(_x0) + 4 * f((_x0 + _xn) / 2) + f(_xn)) / 6.;
+		sumNext += (_xn - _x0) * (f(_x0) + 4 * f((_x0 + _xn) / 2) + f(_xn)) / 6.;
 	}
 
 	fout << "N | h | Interral | Погрешность | Оценка погр. | k\n";
@@ -69,28 +69,35 @@ void simpsonMethod()
 		count += n;
 
 		error = (sum - pred_sum) * runge;
+		double pogr = sum - pred_sum;
 		double k = log((sum - sumPrev) / (sumNext - sumPrev) - 1) / log(0.5);
 		sumPrev = sumNext;
 		sumNext = sum;
 
-		if(n<3)
+		if (n == 1)
 		{
-			fout << fixed << setw(5)<<setprecision(0) << n << "|" << setw(6) << setprecision(4) << h << "|" <<setw(12)<<setprecision(9)<<sum<<"|" << setw(15) << setprecision(12) << scientific << error << "|\n";
+			fout << fixed << setw(5) << setprecision(0) << n << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << sum << "|"<<scientific<<abs(pogr)<<'\n';
+		}
+		else if (n == 2)
+		{
+			fout << fixed << setw(5) << setprecision(0) << n << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << sum << "|" << setw(15) << setprecision(12) << scientific<<abs(pogr)<<"|" << error << "|\n";
 		}
 		else
 		{
-			fout << fixed << setw(5)<<setprecision(0) << n << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << sum << "|" <<setw(15) << setprecision(12) << scientific << error << "|" << setw(15) << setprecision(12) << scientific << k << '\n';
+			fout << fixed << setw(5) << setprecision(0) << n << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << sum << "|" << setw(15) << setprecision(12) << scientific << abs(pogr) << "|" << error << "|" << fixed << setw(8) << setprecision(5) << k << '\n';
 		}
 
 		n *= 2;
 	}
 
 	fout << "Result: " << fixed<<setprecision(15)<<sum<<'\n';
-	fout <<fixed<<setprecision(0) <<count;
+	fout << "Kobr: " << fixed << setprecision(0) << count << '\n';
 }
 
 void threePointGauss()
 {
+	fout << "Формула Гаусса-3\n";
+
 	double a0 = 5 / 9., a1 = 8 / 9.;
 	double sum = 0;
 	double runge = 1 / 63.;
@@ -117,6 +124,8 @@ void threePointGauss()
 		sumNext += (h / 2) * (a0 * f(x - h * sqrt(0.6) / 2) + a1 * f(x) + a0 * f(x + h * sqrt(0.6) / 2));
 	}
 
+	fout << "N | h | Interral | Погрешность | Оценка погр. | k\n";
+
 	while(abs(error)>eps||n<5)
 	{
 		h = dx / n;
@@ -134,23 +143,35 @@ void threePointGauss()
 		}
 
 		error = (sum - predSum) * runge;
-
+		double pogr = sum - predSum;
 		double k = log((sum - sumPrev) / (sumNext - sumPrev) - 1) / log(0.5);
 
 		sumPrev = sumNext;
 		sumNext = sum;
 
+		if (n == 1)
+		{
+			fout << fixed << setw(5) << setprecision(0) << n << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << sum << "|" << scientific << abs(pogr) << '\n';
+		}
+		else if (n == 2)
+		{
+			fout << fixed << setw(5) << setprecision(0) << n << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << sum << "|" << setw(15) << setprecision(12) << scientific << abs(pogr) << "|" << error << "|\n";
+		}
+		else
+		{
+			fout << fixed << setw(5) << setprecision(0) << n << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << sum << "|" << setw(15) << setprecision(12) << scientific << abs(pogr) << "|" << error << "|" << fixed << setw(8) << setprecision(5) << k << '\n';
+		}
 		n *= 2;
-
-		cout << sum << endl;
 	}
+	fout << "Result: " << fixed << setprecision(15) << sum << '\n';
+	fout <<"Kobr: " << fixed << setprecision(0) << count << '\n';
 }
 
 
 
 void first_trapeze_metod()
 {
-	cout << "Метод трапеций" << endl;
+	fout << "Метод трапеций" << endl;
 	int N = 1;
 	double h = (xn - x0) / N;
 	double s1, s2=0, s3, sk;
@@ -160,7 +181,9 @@ void first_trapeze_metod()
 	sk = (f(x0) + f(xn))/2;
 	double count = 2;
 	s1 = sk * h;
-	cout <<setw(7)<< N << " "  <<setw(15)<< h << " "  << setw(15) << s1 << endl;
+	fout << "N | h | Interral | Погрешность | Оценка погр. | k\n";
+
+	fout <<fixed<<setw(5)<< N << "|"  <<setw(6)<<setprecision(4)<< h << "|"  << setw(12)<<setprecision(9) << s1 << endl;
 	do
 	{
 		N *= 2;
@@ -177,22 +200,22 @@ void first_trapeze_metod()
 		ocenka_pogr = pow(alpha, 2) / (1 - pow(alpha, 2)) * (s1 - s2);
 		pogr = s1 - s2;
 		if (N == 2) {
-			cout <<setw(7) << N << " "  << setw(15) << h << " "  << setw(15) << s1 << " " << scientific  << setw(15) << ocenka_pogr <<" " << setw(15) << abs(pogr) << endl;
+			fout <<fixed<<setw(5)<<setprecision(0) << N << "|"  << setw(6)<<setprecision(4) << h << "|"  << setw(12)<<setprecision(9) << s1 << "|" << scientific << setw(15)<<setprecision(12) << abs(pogr) <<"|" << ocenka_pogr << endl;
 		}
 		else
 		{
 			k = 1 / log(alpha) * log((s1 - s3) / (s2 - s3) - 1);
-			cout <<setw(7) << N << " "  << setw(15) << h << " "  << setw(15) << s1 << " " << scientific  << setw(15) << ocenka_pogr << " " << setw(15) << abs(pogr) << " " <<setprecision(4) << setw(15) << k << endl;
+			fout << fixed << setw(5) << setprecision(0) << N << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << s1 << "|" << scientific << setw(15) << setprecision(12) << abs(pogr) << "|" << ocenka_pogr<<"|" << fixed << setprecision(4) << k << endl;
 		}
 	} while (abs(s1-s2)/3 > eps); // тут вроде такая константа
 
-	cout << "Результат: " << s1 << endl;
-	cout << "Кол-во обращений" << count<<endl;
+	fout << "Результат: " <<fixed<<setprecision(15)<< s1 << endl;
+	fout << "Кол-во обращений" <<fixed<<setprecision(0)<<count<<endl;
 }
 
 void second_trapeze_metod()
 {
-	cout << "Метод трапеций (модифицированной с помощью сплайна)" << endl;
+	fout << "Метод трапеций (модифицированной с помощью сплайна)" << endl;
 	int N = 1;
 	double h = (xn - x0) / N;
 	double s1, s2 = 0, s3, sk;
@@ -204,7 +227,10 @@ void second_trapeze_metod()
 	sk = (f(x0) + f(xn)) / 2;
 	double count = 2;
 	s1 = sk * h + h*h/12*spr;
-	cout << setw(7) << N << " " << setw(15) << h << " " << setw(15) << s1 << endl;
+
+	fout << "N | h | Interral | Погрешность | Оценка погр. | k\n";
+
+	fout << fixed << setw(5) << N << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << s1 << endl;
 	do
 	{
 		N *= 2;
@@ -221,16 +247,17 @@ void second_trapeze_metod()
 		ocenka_pogr = pow(alpha, 4) / (1 - pow(alpha, 4)) * (s1 - s2);
 		pogr = s1 - s2;
 		if (N == 2) {
-			cout << setw(7) << N << " " << setw(15) << h << " " << setw(15) << s1 << " " << scientific << setw(15) << ocenka_pogr << " " << setw(15) << abs(pogr) << endl;
+			fout << fixed << setw(5) << setprecision(0) << N << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << s1 << "|" << scientific << setw(15) << setprecision(12) << abs(pogr) << "|" << ocenka_pogr << endl;
 		}
 		else
 		{
 			k = 1 / log(alpha) * log((s1 - s3) / (s2 - s3) - 1);
-			cout << setw(7) << N << " " << setw(15) << h << " " << setw(15) << s1 << " " << scientific << setw(15) << ocenka_pogr << " " << setw(15) << abs(pogr) << " " << setprecision(4) << setw(15) << k << endl;
+			fout << fixed << setw(5) << setprecision(0) << N << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << s1 << "|" << scientific << setw(15) << setprecision(12) << abs(pogr) << "|" << ocenka_pogr << "|" << fixed << setprecision(4) << k << endl;
 		}
 	} while (abs(s1 - s2) / 3 > eps); //тут я не уверен насчёт константы
-	cout << "Результат: " << s1 << endl;
-	cout << "Кол-во обращений" << count<<endl;
+
+	fout << "Результат: " << fixed << setprecision(15) << s1 << endl;
+	fout << "Кол-во обращений" << fixed << setprecision(0) << count << endl;
 }
 
 int main()
