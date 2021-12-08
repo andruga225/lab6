@@ -7,7 +7,7 @@
 
 using namespace std;
 
-int variant = 4;
+int variant = 11;
 int x0 = 1;
 int xn = 2;
 const double eps = 10e-8;
@@ -19,6 +19,13 @@ double f(double x)
 	if (variant == 4)
 		return  2 * exp(x) - 5 * x;
 	return exp(x) + x + 1;
+}
+
+double F()
+{
+	if (variant == 4)
+		return 1.841548540943211;// 2*exp(2.0)-(15.0/2.0)-2*exp(1.0);
+	return 7.170774270471606;//exp(2.0) + (5.0 / 2.0) - exp(1.0);
 }
 
 double df(double x)
@@ -198,7 +205,7 @@ void first_trapeze_metod()
 		s1 =sk*h;
 
 		ocenka_pogr = pow(alpha, 2) / (1 - pow(alpha, 2)) * (s1 - s2);
-		pogr = s1 - s2;
+		pogr = F()-s1;
 		if (N == 2) {
 			fout <<fixed<<setw(5)<<setprecision(0) << N << "|"  << setw(6)<<setprecision(4) << h << "|"  << setw(12)<<setprecision(9) << s1 << "|" << scientific << setw(15)<<setprecision(12) << abs(pogr) <<"|" << ocenka_pogr << endl;
 		}
@@ -210,7 +217,7 @@ void first_trapeze_metod()
 	} while (abs(s1-s2)/3 > eps); // тут вроде такая константа
 
 	fout << "Результат: " <<fixed<<setprecision(15)<< s1 << endl;
-	fout << "Кол-во обращений" <<fixed<<setprecision(0)<<count<<endl;
+	fout << "Кол-во обращений: " <<fixed<<setprecision(0)<<count<<endl;
 }
 
 void second_trapeze_metod()
@@ -245,7 +252,7 @@ void second_trapeze_metod()
 		s1 = sk * h+spr*h*h/12;
 
 		ocenka_pogr = pow(alpha, 4) / (1 - pow(alpha, 4)) * (s1 - s2);
-		pogr = s1 - s2;
+		pogr = F()-s1;
 		if (N == 2) {
 			fout << fixed << setw(5) << setprecision(0) << N << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << s1 << "|" << scientific << setw(15) << setprecision(12) << abs(pogr) << "|" << ocenka_pogr << endl;
 		}
@@ -257,13 +264,15 @@ void second_trapeze_metod()
 	} while (abs(s1 - s2) / 3 > eps); //тут я не уверен насчёт константы
 
 	fout << "Результат: " << fixed << setprecision(15) << s1 << endl;
-	fout << "Кол-во обращений" << fixed << setprecision(0) << count << endl;
+	fout << "Кол-во обращений: " << fixed << setprecision(0) << count << endl;
 }
 
 int main()
 {
 	setlocale(LC_ALL, "rus");
+
 	/*резюмирую вроде всё сходится с вариантом с трекусов но нужно сделать вывод покрасивше*/
+	fout <<fixed<<setprecision(15)<< "J = " << F()<<endl;
 	first_trapeze_metod();
 	second_trapeze_metod();
 	simpsonMethod();
