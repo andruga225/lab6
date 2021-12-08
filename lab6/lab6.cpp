@@ -7,13 +7,15 @@
 
 using namespace std;
 
-int variant = 11;
+int variant = 4;
 int x0 = 1;
 int xn = 2;
 const double eps = 10e-8;
+double inte;
 
 ofstream fout("output.txt");
 
+//Функция
 double f(double x)
 {
 	if (variant == 4)
@@ -21,13 +23,15 @@ double f(double x)
 	return exp(x) + x + 1;
 }
 
+//Значение интеграла
 double F()
 {
 	if (variant == 4)
-		return 1.841548540943211;// 2*exp(2.0)-(15.0/2.0)-2*exp(1.0);
-	return 7.170774270471606;//exp(2.0) + (5.0 / 2.0) - exp(1.0);
+		return 2*exp(2.0)-(15.0/2.0)-2*exp(1.0);
+	return exp(2.0) + (5.0 / 2.0) - exp(1.0);
 }
 
+//Производная функции
 double df(double x)
 {
 	if (variant == 4)
@@ -35,6 +39,7 @@ double df(double x)
 	return exp(x) + 1;
 }
 
+//Метод Симпсона
 void simpsonMethod()
 {
 	fout << "Формула Симпсона\n";
@@ -44,6 +49,7 @@ void simpsonMethod()
 	double n = 1, count = 0;
 	double error = 1;
 	double dx = xn - x0;
+	double alpha = 0.5;
 
 	double sumPrev = (xn - x0) * (f(x0) + 4 * f((xn + x0) / 2) + f(xn)) / 6.;
 	double sumNext = 0;
@@ -60,9 +66,8 @@ void simpsonMethod()
 
 	fout << "N | h | Interral | Погрешность | Оценка погр. | k\n";
 
-	while (abs(error) > eps) {
+	while (abs(error)*runge > eps) {
 		h = (dx) / n;
-		double pred_sum = sum;
 
 		sum = 0;
 
@@ -75,23 +80,23 @@ void simpsonMethod()
 		}
 		count += n;
 
-		error = (sum - pred_sum) * runge;
-		double pogr = sum - pred_sum;
-		double k = log((sum - sumPrev) / (sumNext - sumPrev) - 1) / log(0.5);
+		error = F() - sum;
+		double pogr = pow(alpha, 4) / (1 - pow(alpha, 4)) * (sum - sumNext);
+		double k = log((sum - sumPrev) / (sumNext - sumPrev) - 1) / log(alpha);
 		sumPrev = sumNext;
 		sumNext = sum;
 
 		if (n == 1)
 		{
-			fout << fixed << setw(5) << setprecision(0) << n << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << sum << "|"<<scientific<<abs(pogr)<<'\n';
+			fout << fixed << setw(5) << setprecision(0) << n << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << sum << "|"<<scientific<<abs(error)<<'\n';
 		}
 		else if (n == 2)
 		{
-			fout << fixed << setw(5) << setprecision(0) << n << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << sum << "|" << setw(15) << setprecision(12) << scientific<<abs(pogr)<<"|" << error << "|\n";
+			fout << fixed << setw(5) << setprecision(0) << n << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << sum << "|" << setw(15) << setprecision(12) << scientific<<abs(error)<<"|" << pogr << "|\n";
 		}
 		else
 		{
-			fout << fixed << setw(5) << setprecision(0) << n << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << sum << "|" << setw(15) << setprecision(12) << scientific << abs(pogr) << "|" << error << "|" << fixed << setw(8) << setprecision(5) << k << '\n';
+			fout << fixed << setw(5) << setprecision(0) << n << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << sum << "|" << setw(15) << setprecision(12) << scientific << abs(error) << "|" << pogr << "|" << fixed << setw(8) << setprecision(5) << k << '\n';
 		}
 
 		n *= 2;
@@ -101,17 +106,17 @@ void simpsonMethod()
 	fout << "Kobr: " << fixed << setprecision(0) << count << '\n';
 }
 
+//Метода Гаусса трехточечный
 void threePointGauss()
 {
 	fout << "Формула Гаусса-3\n";
 
 	double a0 = 5 / 9., a1 = 8 / 9.;
 	double sum = 0;
-	double runge = 1 / 63.;
 	double n = 1, count = 0;
 	double error = 1;
 	double dx = xn - x0;
-
+	double alpha = 0.5;
 	double sumPrev = 0;
 	double sumNext = 0;
 
@@ -133,11 +138,9 @@ void threePointGauss()
 
 	fout << "N | h | Interral | Погрешность | Оценка погр. | k\n";
 
-	while(abs(error)>eps||n<5)
+	while(abs(error)/63.>eps||n<5)
 	{
 		h = dx / n;
-
-		double predSum = sum;
 
 		sum = 0;
 		for (int i = 0; i < n; ++i)
@@ -149,33 +152,33 @@ void threePointGauss()
 			count += 3;
 		}
 
-		error = (sum - predSum) * runge;
-		double pogr = sum - predSum;
-		double k = log((sum - sumPrev) / (sumNext - sumPrev) - 1) / log(0.5);
-
-		sumPrev = sumNext;
-		sumNext = sum;
+		error = F() - sum;
+		double pogr= pow(alpha, 6) / (1 - pow(alpha, 6)) * (sum - sumNext);
+		double k= log((sum - sumPrev) / (sumNext - sumPrev) - 1) / log(alpha);
 
 		if (n == 1)
 		{
-			fout << fixed << setw(5) << setprecision(0) << n << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << sum << "|" << scientific << abs(pogr) << '\n';
+
+			fout << fixed << setw(5) << setprecision(0) << n << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << sum << "|" << scientific << abs(error) << '\n';
 		}
 		else if (n == 2)
 		{
-			fout << fixed << setw(5) << setprecision(0) << n << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << sum << "|" << setw(15) << setprecision(12) << scientific << abs(pogr) << "|" << error << "|\n";
+			fout << fixed << setw(5) << setprecision(0) << n << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << sum << "|" << setw(15) << setprecision(12) << scientific << abs(error) << "|" << pogr << "|\n";
 		}
 		else
 		{
-			fout << fixed << setw(5) << setprecision(0) << n << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << sum << "|" << setw(15) << setprecision(12) << scientific << abs(pogr) << "|" << error << "|" << fixed << setw(8) << setprecision(5) << k << '\n';
+			fout << fixed << setw(5) << setprecision(0) << n << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << sum << "|" << setw(15) << setprecision(12) << scientific << abs(error) << "|" << pogr << "|" << fixed << setw(8) << setprecision(5) << k << '\n';
 		}
 		n *= 2;
+		sumPrev = sumNext;
+		sumNext = sum;
 	}
 	fout << "Result: " << fixed << setprecision(15) << sum << '\n';
 	fout <<"Kobr: " << fixed << setprecision(0) << count << '\n';
 }
 
 
-
+//Метод трапеций
 void first_trapeze_metod()
 {
 	fout << "Метод трапеций" << endl;
@@ -190,7 +193,7 @@ void first_trapeze_metod()
 	s1 = sk * h;
 	fout << "N | h | Interral | Погрешность | Оценка погр. | k\n";
 
-	fout <<fixed<<setw(5)<< N << "|"  <<setw(6)<<setprecision(4)<< h << "|"  << setw(12)<<setprecision(9) << s1 << endl;
+	fout <<fixed<<setw(5)<< N << "|"  <<setw(6)<<setprecision(4)<< h << "|"  << setw(12)<<setprecision(9) << s1<<"|"<<abs(F()-s1) << endl;
 	do
 	{
 		N *= 2;
@@ -220,6 +223,7 @@ void first_trapeze_metod()
 	fout << "Кол-во обращений: " <<fixed<<setprecision(0)<<count<<endl;
 }
 
+//Модифицированный метод трапеций
 void second_trapeze_metod()
 {
 	fout << "Метод трапеций (модифицированной с помощью сплайна)" << endl;
@@ -237,7 +241,7 @@ void second_trapeze_metod()
 
 	fout << "N | h | Interral | Погрешность | Оценка погр. | k\n";
 
-	fout << fixed << setw(5) << N << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << s1 << endl;
+	fout << fixed << setw(5) << N << "|" << setw(6) << setprecision(4) << h << "|" << setw(12) << setprecision(9) << s1<<"|" << abs(F() - s1) << endl;
 	do
 	{
 		N *= 2;
@@ -271,7 +275,6 @@ int main()
 {
 	setlocale(LC_ALL, "rus");
 
-	/*резюмирую вроде всё сходится с вариантом с трекусов но нужно сделать вывод покрасивше*/
 	fout <<fixed<<setprecision(15)<< "J = " << F()<<endl;
 	first_trapeze_metod();
 	second_trapeze_metod();
